@@ -15,13 +15,11 @@ class PlacementEngine:
         
         # Calculate weighted final score
         placement_score = (
-            (resume_score * 0.20) +
-            (ats_score * 0.15) +
-            (coding_score * 0.25) +
-            (projects_score * 0.15) +
-            (comm_score * 0.10) +
-            (internship_score * 0.10) +
-            (cert_score * 0.05)
+            (resume_score * 0.25) +
+            (coding_score * 0.30) +
+            (projects_score * 0.20) +
+            (comm_score * 0.15) +
+            (internship_score * 0.10) # Mapping Experience to internship_score/experience_score
         )
         
         placement_score = int(placement_score)
@@ -69,12 +67,10 @@ class PlacementEngine:
             "weakness_analysis": weaknesses,
             "improvement_plan": improvement_plan,
             "details": {
-                "Resume (20%)": int(resume_score * 0.20),
-                "ATS (15%)": int(ats_score * 0.15),
-                "Coding (25%)": int(coding_score * 0.25),
-                "Projects (15%)": int(projects_score * 0.15),
-                "Communication (10%)": int(comm_score * 0.10),
-                "Internship (10%)": int(internship_score * 0.10),
-                "Certification (5%)": int(cert_score * 0.05)
+                "Resume (25%)": int(resume_score * 0.25),
+                "Coding (30%)": int(coding_score * 0.30),
+                "Projects (20%)": int(projects_score * 0.20),
+                "Communication (15%)": int(comm_score * 0.15),
+                "Experience (10%)": int(internship_score * 0.10)
             }
         }

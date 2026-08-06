@@ -6,7 +6,37 @@
 ![Database](https://img.shields.io/badge/Database-SQLAlchemy-green)
 ![AI Powered](https://img.shields.io/badge/AI-Google_Generative_AI-orange)
 
-**TalentSphere Elevate** is an AI-powered comprehensive career development platform designed to guide individuals at various stages of their educational and professional journeys. Whether you are a high school student exploring paths, a college student preparing for the industry, or a working professional seeking growth, TalentSphere provides tailored modules and AI-driven insights to elevate your career.
+# TalentSphere Elevate (V2 Full-Stack Architecture)
+
+An AI-powered career growth and recruitment platform serving High School Students, College Students, and Working Professionals.
+
+## Architecture Migration
+The project is currently migrating from a monolithic Streamlit/SQLite setup to a production-ready **FastAPI + PostgreSQL** backend with a decoupled Streamlit frontend.
+
+The new backend code is located in the `app/` directory.
+The legacy Streamlit code remains at the root level until the migration is complete.
+
+## How to run the new Backend API (FastAPI)
+
+1. Ensure PostgreSQL is installed and running on your local machine.
+2. Create a database named `talentsphere`.
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   python -m spacy download en_core_web_sm
+   ```
+4. Start the FastAPI server:
+   ```bash
+   uvicorn app.main:app --reload
+   ```
+5. View the interactive API docs at `http://localhost:8000/docs`.
+
+## How to run the Legacy Frontend (Streamlit)
+
+1. Start the Streamlit server:
+   ```bash
+   streamlit run app.py
+   ```
 
 ## 🌟 Key Features
 

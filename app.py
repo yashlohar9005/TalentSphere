@@ -10,7 +10,8 @@ import bcrypt
 from database import init_db, db_session, User
 import modules.high_school as high_school
 import modules.college as college
-import modules.professional as professional
+import modules.working_professional as working_professional
+import modules.wp_models as wp_models
 from ai import AIEngine
 
 # Ensure the database tables are created on startup
@@ -136,9 +137,12 @@ def show_login_page() -> None:
     with tab1:
         st.write("### Login to your account")
         with st.form("login_form"):
-            username = st.text_input("Username")
-            password = st.text_input("Password", type="password")
-            submit_button = st.form_submit_button("Login")
+            col1, col2 = st.columns(2)
+            with col1:
+                username = st.text_input("Username")
+            with col2:
+                password = st.text_input("Password", type="password")
+            submit_button = st.form_submit_button("Login to account")
             
             if submit_button:
                 if login_user(username, password):
@@ -150,16 +154,19 @@ def show_login_page() -> None:
     with tab2:
         st.write("### Create a new account")
         with st.form("register_form"):
-            new_username = st.text_input("Choose a Username")
-            full_name = st.text_input("Full Name (optional)")
-            new_password = st.text_input("Choose a Password", type="password")
-            confirm_password = st.text_input("Confirm Password", type="password")
-            dob = st.text_input("Date of Birth (DD/MM/YYYY, optional)")
-            user_type = st.selectbox(
-                "Select your profile type", 
-                ["High School Student", "College Student", "Working Professional", "Admin"]
-            )
-            register_button = st.form_submit_button("Register")
+            col1, col2 = st.columns(2)
+            with col1:
+                new_username = st.text_input("Choose a Username")
+                new_password = st.text_input("Choose a Password", type="password")
+                user_type = st.selectbox(
+                    "Select your profile type", 
+                    ["High School Student", "College Student", "Working Professional", "Admin"]
+                )
+            with col2:
+                full_name = st.text_input("Full Name (optional)")
+                confirm_password = st.text_input("Confirm Password", type="password")
+                dob = st.text_input("Date of Birth (DD/MM/YYYY, optional)")
+            register_button = st.form_submit_button("Register account")
             
             if register_button:
                 if new_password != confirm_password:
@@ -179,13 +186,6 @@ def show_login_page() -> None:
 
 def show_dashboard() -> None:
     """Displays the main dashboard based on user type."""
-    st.sidebar.title(f"Welcome, {st.session_state['username']}!")
-    st.sidebar.write(f"**Profile:** {st.session_state['user_type']}")
-    
-    if st.sidebar.button("Logout"):
-        st.session_state.clear()
-        st.rerun()
-        
     user_type = st.session_state.get('user_type')
     
     # Initialize the AI Engine
@@ -206,8 +206,8 @@ def show_dashboard() -> None:
         else:
             st.info("College module is currently under development.")
     elif user_type == "Working Professional":
-        if hasattr(professional, 'show_dashboard'):
-            professional.show_dashboard(ai_engine)
+        if hasattr(working_professional, 'show_dashboard'):
+            working_professional.show_dashboard(ai_engine)
         else:
             st.info("Professional module is currently under development.")
     else:

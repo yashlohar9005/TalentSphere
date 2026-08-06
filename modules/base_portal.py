@@ -30,16 +30,29 @@ class BasePortal(ABC):
 
     def render_sidebar(self, pages: list[str]) -> None:
         """Renders the common sidebar navigation."""
+        st.sidebar.title("TalentSphere Elevate")
         st.sidebar.markdown("---")
-        st.sidebar.subheader("Navigation")
         
         if self.page_state_key not in st.session_state:
             st.session_state[self.page_state_key] = pages[0]
 
-        for page in pages:
-            if st.sidebar.button(page, use_container_width=True):
-                st.session_state[self.page_state_key] = page
-                st.rerun()
+        # Use native radio styled by primaryColor for navigation
+        selected_page = st.sidebar.radio(
+            "Navigation", 
+            options=pages, 
+            index=pages.index(st.session_state.get(self.page_state_key, pages[0]))
+        )
+        if selected_page != st.session_state.get(self.page_state_key):
+            st.session_state[self.page_state_key] = selected_page
+            st.rerun()
+            
+        st.sidebar.divider()
+        st.sidebar.write(f"👤 **{self.username}**")
+        st.sidebar.write(f"*{st.session_state.get('user_type', 'User')}*")
+        
+        if st.sidebar.button("Logout", use_container_width=True):
+            st.session_state.clear()
+            st.rerun()
 
     def fetch_assessments(self, session) -> list:
         """Fetches all assessments for the user."""
@@ -57,7 +70,13 @@ class BasePortal(ABC):
             data["Score"].append(a.score)
         
         df = pd.DataFrame(data)
-        fig = px.bar(df, x='Category', y='Score', title="Your Assessment Performance", range_y=[0,100], color='Category')
+        fig = px.bar(df, x='Category', y='Score', title="Your Assessment Performance", range_y=[0,100])
+        fig.update_traces(marker_color='#1F9D77')
+        fig.update_layout(
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            font=dict(color='#12213B')
+        )
         st.plotly_chart(fig, width='stretch')
 
     def plot_radar_chart(self, details: dict, exclude_keys: list[str] = None) -> None:
@@ -69,7 +88,12 @@ class BasePortal(ABC):
         df_radar = df[~df["Skill Area"].isin(exclude_keys)]
         
         fig = px.line_polar(df_radar, r='Rating', theta='Skill Area', line_close=True, title="Skill Profile")
-        fig.update_traces(fill='toself')
+        fig.update_traces(fill='toself', fillcolor='rgba(31, 157, 119, 0.4)', line_color='#1F9D77')
+        fig.update_layout(
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            font=dict(color='#12213B')
+        )
         st.plotly_chart(fig, width='stretch')
 
     def render_roadmap_ui(self) -> None:

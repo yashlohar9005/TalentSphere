@@ -24,8 +24,8 @@ class CollegePortal(BasePortal):
         self.pages = ["Dashboard", "Student Profile", "Assessment", "Skill Gap Analysis", "Roadmap & Progress", "Resume Builder", "Reports & Certificates", "Notifications"]
 
     def render_dashboard(self) -> None:
-        st.header("📊 College Dashboard")
-        st.write(f"Welcome back, {self.username}! Here is your personalized placement & career progress.")
+        st.title("📊 College Dashboard")
+        st.caption(f"Welcome back, {self.username}! Here is your personalized placement & career progress.")
         
         with db_session() as session:
             assessments = self.fetch_assessments(session)
@@ -68,213 +68,240 @@ class CollegePortal(BasePortal):
             with col4:
                 st.metric("Active Roadmaps", len(roadmaps))
                 
-            st.info(f"**Recommendation:** {recommendation}")
-
-            # Plotly Charts
-            st.subheader("Your Progress Insights")
-            chart_col1, chart_col2 = st.columns(2)
+            # Tabs layout
+            tab_overview, tab_progress = st.tabs(["Overview", "Progress Insights"])
             
-            with chart_col1:
-                # Gauge Chart for Placement Readiness
-                fig1 = go.Figure(go.Indicator(
-                    mode = "gauge+number",
-                    value = placement_score,
-                    title = {'text': "Industry Readiness"},
-                    gauge = {
-                        'axis': {'range': [0, 100]},
-                        'bar': {'color': "darkblue"},
-                        'steps': [
-                            {'range': [0, 50], 'color': "lightgray"},
-                            {'range': [50, 80], 'color': "gray"}],
-                        'threshold': {
-                            'line': {'color': "red", 'width': 4},
-                            'thickness': 0.75,
-                            'value': 90}
-                    }
-                ))
-                st.plotly_chart(fig1, use_container_width=True)
+            with tab_overview:
+                with st.container(border=True):
+                    st.info(f"**Recommendation:** {recommendation}")
+
+            with tab_progress:
+                chart_col1, chart_col2 = st.columns(2)
                 
-            with chart_col2:
-                # Progress line chart for coding if data exists
-                if coding_tests:
-                    df = {"Test": [f"Test {i+1}" for i in range(len(coding_tests))], "Score": [c.score for c in coding_tests]}
-                    fig2 = px.line(df, x="Test", y="Score", title="Coding Performance Trend")
-                    st.plotly_chart(fig2, use_container_width=True)
-                else:
-                    st.warning("Take coding tests to see your performance trend.")
+                with chart_col1:
+                    with st.container(border=True):
+                        st.subheader("Industry Readiness")
+                        # Gauge Chart for Placement Readiness
+                        fig1 = go.Figure(go.Indicator(
+                            mode = "gauge+number",
+                            value = placement_score,
+                            gauge = {
+                                'axis': {'range': [0, 100]},
+                                'bar': {'color': "#1F9D77"},
+                                'steps': [
+                                    {'range': [0, 50], 'color': "rgba(0,0,0,0.1)"},
+                                    {'range': [50, 80], 'color': "rgba(0,0,0,0.2)"}],
+                                'threshold': {
+                                    'line': {'color': "#E8A33D", 'width': 4},
+                                    'thickness': 0.75,
+                                    'value': 90}
+                            }
+                        ))
+                        fig1.update_layout(
+                            paper_bgcolor='rgba(0,0,0,0)',
+                            plot_bgcolor='rgba(0,0,0,0)',
+                            font=dict(color='#12213B')
+                        )
+                        st.plotly_chart(fig1, use_container_width=True)
+                    
+                with chart_col2:
+                    with st.container(border=True):
+                        st.subheader("Coding Performance Trend")
+                        # Progress line chart for coding if data exists
+                        if coding_tests:
+                            df = {"Test": [f"Test {i+1}" for i in range(len(coding_tests))], "Score": [c.score for c in coding_tests]}
+                            fig2 = px.line(df, x="Test", y="Score")
+                            fig2.update_traces(line_color='#1F9D77', marker_color='#1F9D77')
+                            fig2.update_layout(
+                                paper_bgcolor='rgba(0,0,0,0)',
+                                plot_bgcolor='rgba(0,0,0,0)',
+                                font=dict(color='#12213B')
+                            )
+                            st.plotly_chart(fig2, use_container_width=True)
+                        else:
+                            st.info("Take coding tests to see your performance trend.")
 
     def render_assessment(self) -> None:
-        st.header("📝 College Assessments")
+        st.title("📝 College Assessments")
+        st.caption("Evaluate your skills through readiness assessments, coding tests, and mock interviews.")
         
-        assessment_type = st.radio("Select Assessment Type", ["Readiness Assessment", "Coding Practice Tests", "Mock Interviews"], horizontal=True)
+        tab_readiness, tab_coding, tab_interview = st.tabs(["Readiness Assessment", "Coding Practice Tests", "Mock Interviews"])
         
-        if assessment_type == "Readiness Assessment":
-            st.write("Evaluate your preparedness for internships and early-career opportunities.")
-            with st.form("col_assessment_form"):
-                q1 = st.slider("How confident are you in your Core Major Skills (e.g., coding, accounting)?", 1, 10, 5)
-                q2 = st.slider("How would you rate your Networking skills?", 1, 10, 5)
-                q3 = st.slider("How robust is your current Resume/Portfolio?", 1, 10, 5)
-                q4 = st.slider("How effectively do you manage your time (GPA/Extracurricular balance)?", 1, 10, 5)
-                q5 = st.slider("How confident are you in Interviewing?", 1, 10, 5)
-                
-                submitted = st.form_submit_button("Submit Assessment")
-                
-                if submitted:
-                    hard_skills = (q1 + q3) / 2 * 10
-                    soft_skills = (q2 + q4 + q5) / 3 * 10
-                    category = "Technical & Hard Skills Focused" if hard_skills > soft_skills else "Soft Skills & Networking Focused"
-                    final_score = max(hard_skills, soft_skills)
+        with tab_readiness:
+            with st.container(border=True):
+                st.write("Evaluate your preparedness for internships and early-career opportunities.")
+                with st.form("col_assessment_form"):
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        q1 = st.slider("How confident are you in your Core Major Skills?", 1, 10, 5)
+                        q2 = st.slider("How would you rate your Networking skills?", 1, 10, 5)
+                        q3 = st.slider("How robust is your current Resume/Portfolio?", 1, 10, 5)
+                    with col2:
+                        q4 = st.slider("How effectively do you manage your time (GPA/Extracurricular)?", 1, 10, 5)
+                        q5 = st.slider("How confident are you in Interviewing?", 1, 10, 5)
                     
-                    details = {
-                        "Core Skills": q1, "Networking": q2, "Portfolio": q3, 
-                        "Time Management": q4, "Interviewing": q5,
-                        "hard_skills_score": hard_skills, "soft_skills_score": soft_skills
-                    }
+                    submitted = st.form_submit_button("Submit Assessment")
                     
-                    with db_session() as session:
-                        new_assessment = Assessment(
-                            user_id=self.user_id,
-                            category=category,
-                            score=int(final_score),
-                            details=json.dumps(details)
-                        )
-                        session.add(new_assessment)
-                    st.success(f"Assessment completed! Your primary strength is: {category}")
+                    if submitted:
+                        hard_skills = (q1 + q3) / 2 * 10
+                        soft_skills = (q2 + q4 + q5) / 3 * 10
+                        category = "Technical & Hard Skills Focused" if hard_skills > soft_skills else "Soft Skills & Networking Focused"
+                        final_score = max(hard_skills, soft_skills)
+                        
+                        details = {
+                            "Core Skills": q1, "Networking": q2, "Portfolio": q3, 
+                            "Time Management": q4, "Interviewing": q5,
+                            "hard_skills_score": hard_skills, "soft_skills_score": soft_skills
+                        }
+                        
+                        with db_session() as session:
+                            new_assessment = Assessment(
+                                user_id=self.user_id,
+                                category=category,
+                                score=int(final_score),
+                                details=json.dumps(details)
+                            )
+                            session.add(new_assessment)
+                        st.success(f"Assessment completed! Your primary strength is: {category}")
                     
-        elif assessment_type == "Coding Practice Tests":
-            st.subheader("Interactive Coding Practice")
-            if not self.ai_engine:
-                st.error("AI Engine offline.")
-                return
-                
-            topics = self.ai_engine.coding_engine.get_topics()
-            selected_topic = st.selectbox("Select a Topic", topics)
-            
-            if st.button("Start Assessment"):
-                st.session_state["active_coding_topic"] = selected_topic
-                st.session_state["coding_questions"] = self.ai_engine.coding_engine.generate_questions(selected_topic)
-                
-            if "coding_questions" in st.session_state and st.session_state.get("active_coding_topic") == selected_topic:
-                with st.form("coding_test_form"):
-                    answers = {}
-                    for q in st.session_state["coding_questions"]:
-                        answers[q['id']] = st.radio(q['question'], q['options'], key=f"q_{q['id']}")
+        with tab_coding:
+            with st.container(border=True):
+                st.subheader("Interactive Coding Practice")
+                if not self.ai_engine:
+                    st.error("AI Engine offline.")
+                else:
+                    topics = self.ai_engine.coding_engine.get_topics()
+                    selected_topic = st.selectbox("Select a Topic", topics)
                     
-                    if st.form_submit_button("Submit Test"):
-                        with st.spinner("AI Evaluating..."):
-                            result = self.ai_engine.coding_engine.evaluate_assessment(selected_topic, answers, len(st.session_state["coding_questions"]))
+                    if st.button("Start Assessment"):
+                        st.session_state["active_coding_topic"] = selected_topic
+                        st.session_state["coding_questions"] = self.ai_engine.coding_engine.generate_questions(selected_topic)
+                        
+                    if "coding_questions" in st.session_state and st.session_state.get("active_coding_topic") == selected_topic:
+                        with st.form("coding_test_form"):
+                            answers = {}
+                            for q in st.session_state["coding_questions"]:
+                                answers[q['id']] = st.radio(q['question'], q['options'], key=f"q_{q['id']}")
                             
-                            with db_session() as session:
-                                test_record = CollegeCodingTest(
-                                    user_id=self.user_id,
-                                    topic=selected_topic,
-                                    score=result["score"],
-                                    total_questions=result["total_questions"],
-                                    weak_topics=json.dumps(result["weak_topics"]),
-                                    strong_topics=json.dumps(result["strong_topics"]),
-                                    ai_suggestions=result["ai_suggestions"]
-                                )
-                                session.add(test_record)
-                                
-                            st.success(f"Score: {result['score']}%")
-                            st.info(result['ai_suggestions'])
-                            del st.session_state["coding_questions"]
-                            del st.session_state["active_coding_topic"]
+                            if st.form_submit_button("Submit Test"):
+                                with st.spinner("AI Evaluating..."):
+                                    result = self.ai_engine.coding_engine.evaluate_assessment(selected_topic, answers, len(st.session_state["coding_questions"]))
+                                    
+                                    with db_session() as session:
+                                        test_record = CollegeCodingTest(
+                                            user_id=self.user_id,
+                                            topic=selected_topic,
+                                            score=result["score"],
+                                            total_questions=result["total_questions"],
+                                            weak_topics=json.dumps(result["weak_topics"]),
+                                            strong_topics=json.dumps(result["strong_topics"]),
+                                            ai_suggestions=result["ai_suggestions"]
+                                        )
+                                        session.add(test_record)
+                                        
+                                    st.success(f"Score: {result['score']}%")
+                                    st.info(result['ai_suggestions'])
+                                    del st.session_state["coding_questions"]
+                                    del st.session_state["active_coding_topic"]
 
-        elif assessment_type == "Mock Interviews":
-            st.subheader("Mock Interview Simulator")
-            if not self.ai_engine:
-                st.error("AI Engine offline.")
-                return
-                
-            int_type = st.selectbox("Select Interview Type", ["Technical", "HR", "Behavioral"])
-            
-            if st.button("Start Interview"):
-                st.session_state["active_interview_type"] = int_type
-                st.session_state["interview_questions"] = self.ai_engine.interview_engine.get_questions(int_type)
-                
-            if "interview_questions" in st.session_state and st.session_state.get("active_interview_type") == int_type:
-                with st.form("mock_interview_form"):
-                    answers = {}
-                    for i, q in enumerate(st.session_state["interview_questions"]):
-                        answers[i] = st.text_area(q, key=f"int_q_{i}")
+        with tab_interview:
+            with st.container(border=True):
+                st.subheader("Mock Interview Simulator")
+                if not self.ai_engine:
+                    st.error("AI Engine offline.")
+                else:
+                    int_type = st.selectbox("Select Interview Type", ["Technical", "HR", "Behavioral"])
                     
-                    if st.form_submit_button("Complete Interview"):
-                        with st.spinner("AI evaluating your responses..."):
-                            result = self.ai_engine.interview_engine.evaluate_interview(int_type, answers)
+                    if st.button("Start Interview"):
+                        st.session_state["active_interview_type"] = int_type
+                        st.session_state["interview_questions"] = self.ai_engine.interview_engine.get_questions(int_type)
+                        
+                    if "interview_questions" in st.session_state and st.session_state.get("active_interview_type") == int_type:
+                        with st.form("mock_interview_form"):
+                            answers = {}
+                            for i, q in enumerate(st.session_state["interview_questions"]):
+                                answers[i] = st.text_area(q, key=f"int_q_{i}")
                             
-                            with db_session() as session:
-                                int_record = MockInterviewResult(
-                                    user_id=self.user_id,
-                                    interview_type=int_type,
-                                    confidence_score=result["confidence"],
-                                    communication_score=result["communication"],
-                                    technical_accuracy=result["technical_accuracy"],
-                                    answer_relevance=result["answer_relevance"],
-                                    problem_solving=result["problem_solving"],
-                                    overall_score=result["overall_score"],
-                                    ai_feedback=result["ai_feedback"],
-                                    improvement_suggestions=json.dumps(result["improvement_suggestions"])
-                                )
-                                session.add(int_record)
-                                
-                            st.success(f"Overall Interview Score: {result['overall_score']}/100")
-                            st.write(f"**Feedback:** {result['ai_feedback']}")
-                            st.write("**Suggestions:**", ", ".join(result["improvement_suggestions"]))
-                            del st.session_state["interview_questions"]
-                            del st.session_state["active_interview_type"]
+                            if st.form_submit_button("Complete Interview"):
+                                with st.spinner("AI evaluating your responses..."):
+                                    result = self.ai_engine.interview_engine.evaluate_interview(int_type, answers)
+                                    
+                                    with db_session() as session:
+                                        int_record = MockInterviewResult(
+                                            user_id=self.user_id,
+                                            interview_type=int_type,
+                                            confidence_score=result["confidence"],
+                                            communication_score=result["communication"],
+                                            technical_accuracy=result["technical_accuracy"],
+                                            answer_relevance=result["answer_relevance"],
+                                            problem_solving=result["problem_solving"],
+                                            overall_score=result["overall_score"],
+                                            ai_feedback=result["ai_feedback"],
+                                            improvement_suggestions=json.dumps(result["improvement_suggestions"])
+                                        )
+                                        session.add(int_record)
+                                        
+                                    st.success(f"Overall Interview Score: {result['overall_score']}/100")
+                                    st.write(f"**Feedback:** {result['ai_feedback']}")
+                                    st.write("**Suggestions:**", ", ".join(result["improvement_suggestions"]))
+                                    del st.session_state["interview_questions"]
+                                    del st.session_state["active_interview_type"]
 
     def render_skill_gap(self) -> None:
-        st.header("🎯 Skill Gap & Career Matching")
+        st.title("🎯 Skill Gap & Career Matching")
+        st.caption("Analyze your missing skills, discover target roles, and find internships.")
         
         tab1, tab2, tab3 = st.tabs(["Skill Gap Analysis", "Job Matching", "Internship Recommendations"])
         
         with tab1:
-            st.subheader("Skill Gap Analysis")
-            # We mock the current skills for demonstration; in a real app, these are fetched from CollegeStudentProfile
-            target_role = st.selectbox("Select Target Role for Analysis", ["Software Developer", "Data Analyst", "AI Engineer", "Product Manager"])
-            if st.button("Analyze Skill Gap") and self.ai_engine:
-                with st.spinner("Analyzing..."):
-                    # Mocking required vs current for demo
-                    required_skills = {"python": 5, "sql": 4, "git": 3, "react": 3, "aws": 2}
-                    current_skills = {"python": 3, "sql": 4, "java": 3, "git": 1}
-                    
-                    result = self.ai_engine.skill_gap.analyze_gap(current_skills, required_skills, target_role)
-                    
-                    st.metric("Skill Match", f"{result['readiness_percentage']}%")
-                    st.write("**Missing Skills & Priority:**")
-                    for s in result["priority_ranking"]:
-                        st.write(f"- {s} (Gap: {result['missing_skills'][s]})")
+            with st.container(border=True):
+                st.subheader("Skill Gap Analysis")
+                # We mock the current skills for demonstration; in a real app, these are fetched from CollegeStudentProfile
+                target_role = st.selectbox("Select Target Role for Analysis", ["Software Developer", "Data Analyst", "AI Engineer", "Product Manager"])
+                if st.button("Analyze Skill Gap") and self.ai_engine:
+                    with st.spinner("Analyzing..."):
+                        # Mocking required vs current for demo
+                        required_skills = {"python": 5, "sql": 4, "git": 3, "react": 3, "aws": 2}
+                        current_skills = {"python": 3, "sql": 4, "java": 3, "git": 1}
                         
-                    st.write("**Learning Recommendations:**")
-                    for rec in result["learning_suggestions"]:
-                        st.write(f"- {rec}")
+                        result = self.ai_engine.skill_gap.analyze_gap(current_skills, required_skills, target_role)
+                        
+                        st.metric("Skill Match", f"{result['readiness_percentage']}%")
+                        st.write("**Missing Skills & Priority:**")
+                        for s in result["priority_ranking"]:
+                            st.write(f"- {s} (Gap: {result['missing_skills'][s]})")
+                            
+                        st.write("**Learning Recommendations:**")
+                        for rec in result["learning_suggestions"]:
+                            st.write(f"- {rec}")
                         
         with tab2:
-            st.subheader("Job Matching Engine")
-            if self.ai_engine:
-                role = st.selectbox("Select Role to Match", self.ai_engine.job_matching.roles)
-                if st.button("Calculate Match %"):
-                    # Pass mock data. Real data should be fetched from Profile
-                    match_result = self.ai_engine.job_matching.get_job_match(role, "python, sql, git, react", 8.5)
-                    st.metric("Match Percentage", f"{match_result['match_percentage']}%")
-                    st.success(match_result["career_recommendation"])
-                    st.info(f"Estimated Salary Range: {match_result['salary_range']}")
-                    st.write("**Reasons:**", " ".join(match_result["reasons"]))
-                    if match_result["missing_skills"]:
-                        st.error(f"Missing Skills: {', '.join(match_result['missing_skills'])}")
+            with st.container(border=True):
+                st.subheader("Job Matching Engine")
+                if self.ai_engine:
+                    role = st.selectbox("Select Role to Match", self.ai_engine.job_matching.roles)
+                    if st.button("Calculate Match %"):
+                        # Pass mock data. Real data should be fetched from Profile
+                        match_result = self.ai_engine.job_matching.get_job_match(role, "python, sql, git, react", 8.5)
+                        st.metric("Match Percentage", f"{match_result['match_percentage']}%")
+                        st.success(match_result["career_recommendation"])
+                        st.info(f"Estimated Salary Range: {match_result['salary_range']}")
+                        st.write("**Reasons:**", " ".join(match_result["reasons"]))
+                        if match_result["missing_skills"]:
+                            st.error(f"Missing Skills: {', '.join(match_result['missing_skills'])}")
                         
         with tab3:
-            st.subheader("Internship Recommendations")
-            if self.ai_engine:
-                if st.button("Find Internships"):
-                    # Pass mock data. Real data should be fetched from Profile
-                    interns = self.ai_engine.internship_engine.get_recommendations(8.5, "python, java, sql", "Bangalore", "Software")
-                    for i in interns:
-                        with st.expander(f"{i['company']} - {i['role']} ({i['match_percentage']}% Match)"):
-                            st.write(f"**Location:** {i['location']}")
-                            st.write(f"**Eligibility:** {i['eligibility']}")
-                            st.write(f"**Required Skills:** {', '.join(i['required_skills'])}")
+            with st.container(border=True):
+                st.subheader("Internship Recommendations")
+                if self.ai_engine:
+                    if st.button("Find Internships"):
+                        # Pass mock data. Real data should be fetched from Profile
+                        interns = self.ai_engine.internship_engine.get_recommendations(8.5, "python, java, sql", "Bangalore", "Software")
+                        for i in interns:
+                            with st.expander(f"{i['company']} - {i['role']} ({i['match_percentage']}% Match)"):
+                                st.write(f"**Location:** {i['location']}")
+                                st.write(f"**Eligibility:** {i['eligibility']}")
+                                st.write(f"**Required Skills:** {', '.join(i['required_skills'])}")
 
     def render_roadmap_ui(self) -> None:
         """Override BasePortal's roadmap to integrate 30/60/90 Day Roadmaps dynamically."""

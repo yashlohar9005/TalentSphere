@@ -4,6 +4,14 @@ Enhanced Rule-based ATS Resume Checker and Parser.
 """
 import re
 import json
+import spacy
+import nltk
+
+try:
+    nlp = spacy.load("en_core_web_sm")
+except OSError:
+    # Fallback if model isn't downloaded yet
+    nlp = None
 
 class ResumeAnalyzer:
     def parse_resume(self, file_content: bytes, filename: str) -> dict:
@@ -71,6 +79,26 @@ class ResumeAnalyzer:
         parsed_data["degree"] = "\n".join(sections["education"][:2]) # Just grab first few lines
         
         return parsed_data
+
+    def _extract_skills_nlp(self, text: str) -> list:
+        """
+        Uses spaCy NER and NLTK for advanced skill extraction.
+        """
+        if not nlp:
+            return []
+            
+        doc = nlp(text)
+        skills = set()
+        
+        # Simple extraction heuristic based on proper nouns and known keywords
+        known_tech = {"python", "java", "sql", "aws", "docker", "kubernetes", "react", "fastapi", "postgresql"}
+        
+        for token in doc:
+            if token.text.lower() in known_tech:
+                skills.add(token.text.capitalize())
+            # Noun chunks could also be analyzed here
+                
+        return list(skills)
 
     def analyze_resume(self, resume_text: str, target_role: str = "") -> dict:
         """
