@@ -12,7 +12,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from database import engine, SessionLocal, User, init_db
 from modules.wp_models import (
     WP_RoleRequirement, WP_TrendingSkill, WP_Certification,
-    WP_SalaryBenchmark, WP_ProfessionalProfile, WP_SkillAssessment
+    WP_SalaryBenchmark, WP_ProfessionalProfile, WP_SkillAssessment,
+    WP_LeadershipEvaluation, WP_CareerCoachChat
 )
 
 def seed_data():
@@ -84,7 +85,11 @@ def seed_data():
                 current_company="TechCorp",
                 current_role="Software Developer",
                 total_experience_years=4.0,
-                career_goals="Become Senior Backend Engineer"
+                technical_skills="Python, Django, FastAPI, SQL, Docker, Git, REST API",
+                career_goals="Become Senior Backend Engineer",
+                preferred_job_roles="Senior Backend Engineer, Cloud Engineer",
+                leadership_experience=True,
+                leadership_description="Mentored 2 junior engineers and led backend sprint planning."
             )
             session.add(prof)
             
@@ -94,10 +99,26 @@ def seed_data():
                 "System Design": 72,
                 "Cloud Computing": 55,
                 "DevOps": 48,
-                "Leadership": 70
+                "Leadership": 75
             }
             for k, v in scores.items():
                 session.add(WP_SkillAssessment(user_id=user.id, skill_area=k, score=v))
+
+        # Seed sample Leadership Evaluation for Yash if not present
+        if user and not session.query(WP_LeadershipEvaluation).filter_by(user_id=user.id).first():
+            session.add(WP_LeadershipEvaluation(
+                user_id=user.id,
+                team_coordination=75.0,
+                mentoring=70.0,
+                decision_making=78.0,
+                conflict_resolution=65.0,
+                project_ownership=82.0,
+                communication=80.0,
+                strategic_thinking=72.0,
+                overall_score=74.6,
+                grade="B+ Emerging Leader / Lead Developer",
+                promotion_impact=18.6
+            ))
                 
         session.commit()
         print("Seed data successfully added!")
@@ -111,3 +132,4 @@ def seed_data():
 
 if __name__ == "__main__":
     seed_data()
+

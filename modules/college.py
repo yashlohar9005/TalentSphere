@@ -24,8 +24,15 @@ class CollegePortal(BasePortal):
         self.pages = ["Dashboard", "Student Profile", "Assessment", "Skill Gap Analysis", "Roadmap & Progress", "Resume Builder", "Reports & Certificates", "Notifications"]
 
     def render_dashboard(self) -> None:
-        st.title("📊 College Dashboard")
-        st.caption(f"Welcome back, {self.username}! Here is your personalized placement & career progress.")
+        head_col1, head_col2 = st.columns([6, 1])
+        with head_col1:
+            st.title("📊 College Dashboard")
+            st.caption(f"Welcome back, {self.username}! Here is your personalized placement & career progress.")
+        with head_col2:
+            st.write("")  # Spacing
+            if st.button("🚪 Logout", key="col_header_logout", use_container_width=True):
+                st.session_state.clear()
+                st.rerun()
         
         with db_session() as session:
             assessments = self.fetch_assessments(session)

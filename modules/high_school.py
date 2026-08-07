@@ -46,8 +46,15 @@ class HighSchoolPortal(BasePortal):
 
     def render_dashboard(self) -> None:
         """Renders the enhanced High School Dashboard."""
-        st.title("🎓 High School Dashboard")
-        st.caption(f"Welcome back, {self.username}! Track your learning progress, goals, and skill gaps.")
+        head_col1, head_col2 = st.columns([6, 1])
+        with head_col1:
+            st.title("🎓 High School Dashboard")
+            st.caption(f"Welcome back, {self.username}! Track your learning progress, goals, and skill gaps.")
+        with head_col2:
+            st.write("")  # Spacing
+            if st.button("🚪 Logout", key="hs_header_logout", use_container_width=True):
+                st.session_state.clear()
+                st.rerun()
         
         with db_session() as session:
             assessments = self.fetch_assessments(session)

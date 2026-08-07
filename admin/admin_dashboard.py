@@ -3,8 +3,27 @@ from admin import analytics, user_manager, course_manager, quiz_manager, notific
 from database import db_session, User, Assessment
 
 def show_dashboard(ai_engine=None):
-    st.title("Admin Management System")
-    st.caption("Welcome to the TalentSphere Elevate Admin control panel.")
+    # Sidebar User Profile & Logout
+    with st.sidebar:
+        st.title("TalentSphere Elevate")
+        st.markdown("---")
+        st.write(f"👤 **{st.session_state.get('username', 'Admin')}**")
+        st.write("*Administrator*")
+        st.divider()
+        if st.button("🚪 Logout", key="admin_sidebar_logout", use_container_width=True):
+            st.session_state.clear()
+            st.rerun()
+
+    # Top Header with Title and Logout button
+    head_col1, head_col2 = st.columns([6, 1])
+    with head_col1:
+        st.title("Admin Management System")
+        st.caption("Welcome to the TalentSphere Elevate Admin control panel.")
+    with head_col2:
+        st.write("")  # Spacing
+        if st.button("🚪 Logout", key="admin_header_logout", use_container_width=True):
+            st.session_state.clear()
+            st.rerun()
     
     # Verify Admin Role
     if st.session_state.get("user_type") != "Admin":

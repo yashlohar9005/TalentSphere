@@ -104,3 +104,70 @@ class WP_SalaryBenchmark(Base):
     market_average = Column(Float, nullable=False)
     target_min = Column(Float, nullable=False)
     target_max = Column(Float, nullable=False)
+
+
+class WP_ResumeAnalysis(Base):
+    """
+    Stores resume analysis and improvement recommendations for working professionals.
+    """
+    __tablename__ = 'wp_resume_analysis'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    filename = Column(String(200), nullable=False)
+    file_type = Column(String(20), nullable=False)  # pdf, docx, txt
+    completeness_score = Column(Integer, default=0)
+    
+    # Stored as JSON strings
+    extracted_skills = Column(Text, nullable=True)
+    missing_skills = Column(Text, nullable=True)
+    outdated_skills = Column(Text, nullable=True)
+    recommended_skills = Column(Text, nullable=True)
+    suggestions_json = Column(Text, nullable=True)
+    
+    uploaded_at = Column(DateTime, default=datetime.utcnow)
+    
+    user = relationship("User")
+
+
+class WP_LeadershipEvaluation(Base):
+    """
+    Stores 7-dimension leadership evaluations and AI readiness scores.
+    """
+    __tablename__ = 'wp_leadership_evaluation'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False, unique=True)
+    
+    # 7 Core Leadership Dimensions (0-100)
+    team_coordination = Column(Float, default=50.0)
+    mentoring = Column(Float, default=50.0)
+    decision_making = Column(Float, default=50.0)
+    conflict_resolution = Column(Float, default=50.0)
+    project_ownership = Column(Float, default=50.0)
+    communication = Column(Float, default=50.0)
+    strategic_thinking = Column(Float, default=50.0)
+    
+    overall_score = Column(Float, default=50.0)
+    grade = Column(String(50), default="B Developing Leader")
+    promotion_impact = Column(Float, default=0.0)
+    
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    user = relationship("User")
+
+
+class WP_CareerCoachChat(Base):
+    """
+    Stores conversation history between working professional and AI Career Coach.
+    """
+    __tablename__ = 'wp_career_coach_chat'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    role = Column(String(20), nullable=False)  # 'user' or 'assistant'
+    message = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User")
+
